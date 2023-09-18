@@ -1,0 +1,183 @@
+---
+title: 'Lab-3'
+author: "Dheeraj Oruganty"
+format: 
+  html: 
+    embed-resources: true
+---
+
+# Problem 1:
+
+Plot probability density histograms for these discrete distributions (hint: use the d...() function).
+
+a. Binomial Distribution
+
+```{r}
+x <- 0:56
+p = 0.33
+plot(x,dbinom(x,size=100,prob=0.33),type="h", main = "Example of a Binomial distribution")
+
+```
+
+
+
+
+b. Discrete uniform
+```{r}
+library("extraDistr")
+
+plot(x,dunif(x,min=0,max=50,log=FALSE),type="h", main = "Example of a Discrete Uniform distribution")
+```
+
+c. Bernoulli
+
+```{r}
+p <- 0.3
+
+x <- 0:1
+
+cdf <- sapply(x, function(k)
+pbinom(k, 1, p))
+
+# Create the plot
+plot(
+x,
+cdf,
+type = "s",
+lwd = 2,
+ylim = c(0, 1),
+xlab = "Number of successes",
+ylab = "Cumulative Probability",
+main = "Bernoulli Distribution CDF"
+)
+```
+
+d. Poisson
+
+```{r}
+x <- 0:150
+plot(x,dpois(x,lambda=25),type="h", main = "Example of a Poisson distribution")
+
+```
+
+e. Geometric
+
+```{r}
+plot(x,dgeom(x,prob=.2),type="h", main = "Example of a Geometric distribution")
+
+```
+
+f. Hyper-geometric
+
+```{r}
+
+plot(x,dhyper(x,m=70,n=30,k=20),type="h", main = "Example of a Hyper-geometric distribution")
+```
+
+g. Negative binomial
+```{r}
+plot(x,dnbinom(x,size=150,prob=.33),type="h", main = "Example of a Negative binomial distribution")
+```
+
+
+
+# Problem 2.
+
+Suppose there are fifteen multiple choice questions in `DSAN-5100` midterm test. Each question has four possible answers, and only one of them is correct. Find the probability of having four or less correct answers if a student attempts to answer every question at random.
+
+a. Compute the probability of having exactly 4 correct answers by random attempts using _dbinom()_ and _pbinom()_.
+
+
+
+b. Find the the probability of having four or less correct answers by random attempts using _dbinom()_.
+```{r}
+
+(p4 <- dbinom(4,6,p=0.5) + dbinom(3,6,p=0.5) + dbinom(2,6,p=0.5) + dbinom(1,6,p=0.5) + dbinom(0,6,p=0.5))
+```
+
+c. Compute the above probability(part-b) using _pbinom()_.
+
+```{r}
+pbinom(4,6,p=0.5)
+
+```
+
+
+# Problem 3:
+
+`use r to find the probability`
+
+a. Assume an insurance company receives 3 motor vehicle insurance claims per week. What is the probability that they recieve 11 or fewer claims during a month?
+
+$$P(X\le11)?$$
+
+```{r}
+a <- ppois(11,3*4)
+a
+```
+
+b. While you are at the Georgetown library terrace, you notice that airplanes fly at an average rate of 1 every 4 hours. What is the probability that you will see at least one plane in the next hour?
+
+
+```{r}
+1 - ppois(0,0.25)
+
+```
+
+# Problem 4: 
+
+`Try this example with _..nbinom()_`
+
+(This relates to Problem-1 in Lab-1 Assignment)
+
+Mike had the first three successes in trials 6, 8, and 9. He had six failures until he reached three successes.
+
+Do you think Mike has _success probability p = 0.5 or better?_
+Can a simulation give an answer?Let's try.
+
+1.  If Mike’s success probability is p = 0.5 What is the probability that he will obtain these 3 successes?. 
+
+```{r}
+successes <- 3
+p <- 0.5
+x <- 6
+(prob <- dnbinom(x, size=successes, prob=p))
+
+```
+
+2. Run many simulations (say 10,000) with this success probability to find the same probability $P(X=6)?$ _Hint: Use rnbinom()_
+
+```{r}
+
+simulations <- rnbinom(1000000,size=successes,prob=p)
+sum(simulations == 6)/length(simulations)
+
+```
+
+3. If Mike’s success probability were 0.5 or better, he would not need a lot of attempts.
+Find the probability that three successes were reached after 9 tosses or later by somebody with success probability 0.5. $P(X\ge6)$
+
+a. Calculate the probabiliy using both _dnbinom()_ and _pnbinom()_.
+
+
+```{r}
+#Mike's success probability
+pnbinom1 <- (1 - pnbinom(5,size=successes,prob=p))
+
+dnbinom1 <- (1 - sum(sapply(0:5, function(x) dnbinom(x,size=successes,prob=p))))
+
+pnbinom1
+dnbinom1
+```
+
+b. Calculate this probability using a Simulation(10,000)
+
+```{r}
+#probability using simulations
+sim <- rnbinom(1000000,size=successes,prob=p)
+sum(sim >= 6)/length(sim)
+```
+
+c. Is this probability (part b) the same as you got from "myattempts": Lab 1 Assignment Problem 1 part 3?
+
+No, this is not the same probabability.
