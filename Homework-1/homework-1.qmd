@@ -1,0 +1,249 @@
+---
+title: "Homework-1"
+author: Dheeraj Oruganty
+format: 
+  html: 
+    embed-resources: true
+---
+
+## Problem-1  
+
+a) Create a standard 52 card deck, refer to the card deck created in Bootcamp Assignment 6-problem 1.  
+
+```{r}
+
+suits <- c("Hearts", "Diamonds", "Clubs", "Spades")
+ranks <- c("2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace")
+
+deck <- expand.grid(ranks = ranks, suits = suits)
+```
+
+b) What is the probability of getting two diamonds with replacement?  
+
+```{r}
+
+(prob <- 13/52*13/52)
+```
+
+c) What is the probability of getting two diamonds without replacement?  
+```{r}
+(prob <- 13/52*12/52)
+
+```
+
+
+d) Assuming a 5 card poker hand what is the probability of having four of a kind? (Hint. The probability of a 4 of a kind is equal to total number of ways to get a four of a kind divided by the total number of ways to choose 5 cards from a 52 card deck)  
+
+```{r}
+
+fou <- function(){
+# Total number to get four of a kind
+    f <- 13 * 1 * 48
+
+    # Total ways to choose 5 cards out of 52
+    C52 <- choose(52, 5)
+
+    # Probability of getting a four of a kind
+    return(prob <- f / C52)
+}
+
+(fou())
+```
+
+
+## Problem-2 
+
+Using the poker dataset you just created above
+
+a) Run four simulations that pull 10, 100, 1000, and 10000 cards respectively with replacement. Use the `table` function to find the distribution of suit counts.  
+
+```{r}
+
+s_10 <- sample(deck$suits, size = 10, replace = TRUE)
+s_100 <- sample(deck$suits, size = 100, replace = TRUE)
+s_1000 <- sample(deck$suits, size = 1000, replace = TRUE)
+s_10000 <- sample(deck$suits, size = 10000, replace = TRUE)
+
+table(s_10)
+
+```
+
+
+b) What do you notice about the distribution of counts as more simulations are run?  
+    They are evenly distributed
+c) Run a simulation for Problem #1 part D to answer the question. Compare the results (hint. they should be close)  
+
+
+```{r}
+
+four_kind <- function(hand) {
+  rankc <- table(hand$ranks)
+  any(rankc == 4)
+}
+
+# Number of simulations
+n_simulations <- 1000000
+
+# Simulate and count the occurrences of four of a kind
+count_kind <- sum(replicate(n_simulations, {
+  hand <- deck[sample(nrow(deck), 5), ]
+  four_kind(hand)
+}))
+
+# Estimate the probability
+estimated_probability <- count_kind / n_simulations
+estimated_probability
+
+```
+
+## Problem-3
+
+Consider the baby names data for 2014. Write a function that
+computes the conditional probability $P(gender = F | name = XXX)$ for a given
+character string XXX. Next, use the function to compute conditional probabilities for the
+10 most common female baby names of that year (In other words what is probability the child is a female given the name is XXX?). For which female baby name of
+the top 10 is this conditional probability maximal? What does this mean?
+
+```{r}
+set.seed(420)
+
+yob2014 <- read.csv("/Users/dheeraj/DSAN/DSAN 5001/Homework-1/yob2014.txt")
+names(yob2014) <- c('name','gender','count')
+head(yob2014)
+
+```
+
+
+```{r}
+proba <- function(chara,gender="F"){
+  chara_count <- yob2014[yob2014$name==chara,]
+  return(chara_count[chara_count$gender==gender]$count/sum(chara_count$count))
+}
+
+orderby <- yob2014[order(yob2014$count,decreasing=TRUE),]
+female_count <- orderby[orderby$gender=="F",]
+sapply(head(female_count$name,n=10),function(x) proba(x,gender="F"))
+
+
+```
+
+
+## Problem-4 
+
+Many adults find videos online and then re-post the videos on social media sights. The Pew Internet and American Life Project has found this behavior continues to increase through various polls. The results of such polling is summarized in the table below. A count for `UserCreated` means an individual from that age range prefers watching `UserCreated` videos and a count for `TV` means an individual from that age range prefers watching `TV` videos.
+
+```{r}
+ViewerAge <- c("18-34","35-54","55+","ColumnTotal")
+UserCreated <- c(30,10,3,43)
+TV <- c(38,10,9,57)
+RowTotal <- c(68,20,12,100)
+view <- as.data.frame(cbind(ViewerAge,UserCreated,TV,RowTotal))
+head(view)
+```
+
+Answer the following questions referring to the table above
+
+a) Probability that a viewer is aged 18-34 
+```{r}
+a <- as.integer(view[view$ViewerAge=="18-34",]$RowTotal)
+b <- as.integer(view[view$ViewerAge=="ColumnTotal",]$RowTotal)
+
+a/b
+```
+
+b) Probability that a viewer prefers watching `TV` videos 
+
+```{r}
+a <- as.integer(view[view$ViewerAge=="ColumnTotal",]$TV)
+b <- as.integer(view[view$ViewerAge=="ColumnTotal",]$RowTotal)
+
+a/b
+
+```
+
+c) Percentage of viewers who are 18-34 and prefer watching `UserCreated` videos  
+
+```{r}
+a <- as.integer(view[view$ViewerAge=="18-34",]$UserCreated)
+
+b <- as.integer(view[view$ViewerAge=="ColumnTotal",]$RowTotal)
+
+a/b
+
+```
+
+d) Percentage of viewers who are 35-54 or prefer watching `UserCreated` videos 
+```{r}
+a <- as.integer(view[view$ViewerAge=="35-54",]$UserCreated)
+b <- as.integer(view[view$ViewerAge=="ColumnTotal",]$RowTotal)
+
+a/b
+```
+
+## Problem-5 
+
+Suppose $X$ and $Y$ are independent random variables that both have uniform $U(0,1)$ distributions. Consider the events
+
+$$
+A = \{X < \frac{1}{2}\}, \quad B = \{Y < \cos \pi X\} \, . 
+$$
+
+Then $P(A) = \frac{1}{2}$. Use __R__ and simulations to estimate $P(B), \, P(A|B), P(B|A)$. 
+
+a) `R` will automatically generate independent random variables in a simulation. Use `runif(n)` to simulate 100,000 Uniform(0,1) distributed random values. Make a data frame for $X$ and $Y$ uniform random variables, compute two additional columns for the events $A$ and $B$ as given in the problem, and estimate the relevant probabilities by sub-setting.  
+```{r}
+set.seed(696)
+
+X <- runif(100000)
+Y <- runif(100000)
+
+df <- data.frame(X,Y)
+df$A <- df$X < .5
+df$B <- df$Y < cos(pi * df$X)
+
+```
+
+
+b) Find $P(B)$  
+```{r}
+
+mean(df$B)
+```
+
+c) Find $P(A|B)$  
+```{r}
+mean(df$A[df$B])
+```
+
+
+d) Find $P(B|A)$  
+
+```{r}
+
+mean(df$B[df$A])
+```
+
+## Problem-6
+
+Take 5 `R` functions of your choice and find/compare/contrast their parameters, output, and usability with the `python` function that accomplishes the same goal.  
+
+- Mean()
+    
+    - Mean() in R: If there are missing values present in the vector, then the mean function returns NA.
+    - .mean() in Python: is the same function as the mean function in R, if there are missing values present in the dataframe, then it returns NAN/NA
+
+- Read.csv()
+    - read.csv() in R is used to read the values from a CSV file to a table. it takes in File path or URL of a CSV file
+    - pandas.read_csv() is a part of Pandas library in python which is used to read a CSV file into a Pandas Dataframe
+
+- plot()
+    - plot() in R is used to plot a graph. It comes with standard R package, and can be used to make multiple plots
+    - matplotlib.pyplot.plot() is a subpackage of Matplotlib library in Python. It is very powerful and can take plot multiple inputs at once
+
+- cor()
+    - cor() in R accepts numeric vectors as inputs and is used for correlation matrices.
+    - numpy.corrcoef() accepts numpy arrays as inputs and outputs Correlation matrix.
+
+- unique()
+    - unique() in R accepts Vectors or data frames as inputs and gives out unique values as outputs.
+    - pandas.Series.unique() accepts a series or columns as input and gives out unique values as outputs.
