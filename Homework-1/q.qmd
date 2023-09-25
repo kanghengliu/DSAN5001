@@ -1,0 +1,6 @@
+event[body[payload]]
+
+
+event = event[body]
+
+stock = event[payload]
