@@ -1,6 +1,9 @@
 ---
 title: "Lab-4: Assignment"
-author: "Dr. Purna Gamage"
+author: "Dheeraj Oruganty"
+format: 
+  html:
+    self-contained: true
 ---
 
 ## Problem 1:
@@ -47,22 +50,33 @@ hist(x.7)
 c. Is the distribution of $max(X_1, X_2)$ or $min(X_1, X_2)$ uniform? Please Justify your answer.
 
 ```{r}
-x.5 <- runif(1000)
-x.6 <- runif(1000)
-x.7 = max(x.5,x.6)
-hist(x.7)
+n_simulations <- 10000
+
+# Initialize vectors to store maximum and minimum values
+max_values <- numeric(n_simulations)
+min_values <- numeric(n_simulations)
+
+# Perform simulations
+for (i in 1:n_simulations) {
+  # Generate random values for X1 and X2 from a uniform distribution for simplicity
+  X1 <- runif(1)
+  X2 <- runif(1)
+  
+  # Calculate the maximum and minimum of X1 and X2
+  max_values[i] <- max(X1, X2)
+  min_values[i] <- min(X1, X2)
+}
+
+# Create histograms to visualize the distributions
+par(mfrow=c(1, 2))
+
+hist(max_values, breaks = 20, main = "Distribution of max(X1, X2)", xlab = "Value")
+hist(min_values, breaks = 20, main = "Distribution of min(X1, X2)", xlab = "Value")
 
 ```
 
-```{r}
-x.5 <- runif(1000)
-x.6 <- runif(1000)
-x.8 = min(x.5,x.6)
-hist(x.8)
 
-```
-
-- A: The distribution of $max(X_1, X_2)$ and $min(X_1, X_2)$ is uniform. When we plot the graph, we can see it is uniform.
+- A: The distribution of $max(X_1, X_2)$ and $min(X_1, X_2)$ is not uniform. When we plot the graph, we can see it is not uniform.
 
 
 d. Is the distribution of $1-X_1$ uniform? Please Justify your answer.
@@ -88,10 +102,63 @@ a. Linear Transformations
 
 **Theorem-5.6.4:** If $X$ has the normal distribution with mean $\mu$ and variance $\sigma^2$ and if $Y=a X+b$, 5.6.4 where $a$ and $b$ are given constants and $a \neq 0$, then $Y$ has the normal distribution with mean $a \mu+b$ and variance $a^2 \sigma^2$.
 
-b. Linear Combinations of Normally Distributed Variables
+```{r}
+# Set parameters
+mu <- 2.5
+sigma <- 1.2
+a <- 1.5
+b <- 3.0
 
-**Theorem-5.6.7:**  If the random variables $X_1, \ldots, X_k$ are independent and if $X_i$ has the normal distribution with mean $\mu_i$ and variance $\sigma_i^2(i=1, \ldots, k)$, then the sum $X_1+\cdots+X_k$ has the normal distribution with mean $\mu_1+\cdots+\mu_k$ and variance $\sigma_1^2+\cdots+\sigma_k^2$.
+# Number of simulations
+n_simulations <- 10000
 
+# Simulate random variable X with a normal distribution
+X <- rnorm(n_simulations, mean = mu, sd = sigma)
+
+# Create the new random variable Y using the transformation
+Y <- a * X + b
+
+# Calculate the mean and variance of Y
+mean_Y <- mean(Y)
+variance_Y <- var(Y)
+
+# Expected mean and variance of Y
+expected_mean_Y <- a * mu + b
+expected_variance_Y <- (a^2) * (sigma^2)
+
+#Plotting histogram
+hist(Y, main = "Simulated Distribution of Y", xlab = "Y", col = "lightgreen")
+abline(v = expected_mean_Y, col = "red", lwd = 2)
+legend("topright", legend = c("Simulated Y", "Expected Mean"), col = c("lightgreen", "red"), lwd = c(1, 2))
+
+
+```
+
+```{r}
+
+# Set the parameters
+k <- 5  # Number of independent random variables
+means <- c(2, 3, 1, 4, 2)
+variances <- c(0.5, 1, 1.5, 0.8, 0.3)
+
+# Simulate random variables X1, X2, ..., Xk
+set.seed(909090)  # For reproducibility
+samples <- matrix(0, nrow = 10000, ncol = k)
+for (i in 1:k) {
+  samples[, i] <- rnorm(10000, mean = means[i], sd = sqrt(variances[i]))
+}
+
+sum_X <- rowSums(samples)
+
+expm <- sum(means)
+expv <- sum(variances)
+
+
+hist(sum_X, breaks = 50, probability = TRUE, col = "lightgreen", main = "Simulation of Expected Normal distribution")
+curve(dnorm(x, mean = expm, sd = sqrt(expv)), from = min(sum_X), to = max(sum_X), col = "blue", lwd = 2, add = TRUE)
+legend("topright", legend = c("Simulated Sum", "Expected Normal Distribution"), col = c("lightgreen", "blue"), lwd = c(0, 2))
+
+```
 
 ## Problem 3: 
 
@@ -99,8 +166,32 @@ Use the iris data set to check the normality of Sepal width of setosa using the 
 
 a. Anderson Darling Test
 
-b. Kolmogorov-Smirnov Test (Comapre to a standard normal distribution)
+```{r}
+library(nortest)
+my_data <- iris
+my_data_set <- iris$Sepal.Width[iris$Species == "setosa"]
+ad_test_result <- ad.test(my_data_set)
+shapiro_test_result <- shapiro.test(my_data_set)
+ad_test_result
+shapiro_test_result
+```
 
+- Anderson-Darling Test: The p-value from the Anderson-Darling test is 0.2102. Since this p-value is greater than the typical significance level of 0.05, we fail to reject the null hypothesis. This suggests that the data may follow a normal distribution.
+  
+- Shapiro-Wilk Test: The p-value from the Shapiro-Wilk test is 0.2715. Similar to the Anderson-Darling test, this p-value is greater than 0.05, leading to the same conclusion. We fail to reject the null hypothesis, indicating that the data may follow a normal distribution.
+
+
+b. Kolmogorov-Smirnov Test (Comapre to a standard normal distribution)
+```{r}
+
+my_data <- iris
+my_data_set <- iris$Sepal.Width[iris$Species == "setosa"]
+ks_test_result <- ks.test(my_data_set,"pnorm")
+ks_test_result
+
+```
+
+- The p-value obtained from the KS test is extremely small (p-value < 2.2e-16), well below the typical significance level of 0.05. This means that the data significantly deviates from a standard normal distribution
 
 ## Problem 4: (optional)
 
