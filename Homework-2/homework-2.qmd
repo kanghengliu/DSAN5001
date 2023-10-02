@@ -1,0 +1,319 @@
+---
+title: "Homework-2"
+author: "Dr. Purna Gamage"
+format: 
+    html:
+        self-contained: true
+---
+
+
+## Problem-1
+
+Consider the random variable defined by counting the number of failures until the first success, for independent trials with success probability $p$.  Given $p$ between $0$ and $1$, the __R__ commands `myattempts(p)` and `rgeom(1,p)` both simulate this random variable. Find a way of demonstrating that the two commands indeed give the same results, for five different values of p. 
+_You may find the table() function useful._
+
+```{r}
+
+set.seed(123)
+mytoss = function(p){
+  u <- runif(1)
+  x <- as.numeric(u < p)#when p is the larger number, there is a higher chance of being this argument true.
+  return(x)
+}
+myattempts = function(p){ counter <- 0
+while (mytoss(p) == 0){ counter <- counter + 1 }
+return(counter) }
+
+```
+
+
+
+Choose five p's of your choice, e.g. $p \in \{.1, .3, .5, .7, .9\}$. Run `myattempts` and `rgeom` each 10000 times. 
+
+a. For the first p, store the fraction of outcomes in the simulation in the columns of a suitable data frame and compare (Hint: use 3 columns to compare `rgeom()`, `myattempts()` and `dgeom()` ) 
+
+```{r}
+myattempt <- c((sum(replicate(1000,myattempts(0.5)))/1000))
+rgeom <- c((sum(replicate(1000,rgeom(1,0.5)))/1000))
+dgeom <- c((sum(replicate(1000,dgeom(1,0.5)))/1000))
+df <- data.frame(myattempt,rgeom,dgeom)
+df
+
+
+```
+
+b. For the second p, Compare distribution by computing statistics such as mean and standard deviation. 
+
+```{r}
+
+meanmyattempts <- mean(replicate(1000,myattempts(0.7)))
+sdmyattempts <- sd(replicate(1000,myattempts(0.7)))
+
+
+meanrgeom <- mean(replicate(1000,rgeom(1,0.7)))
+sdrgeom <- sd(replicate(1000,rgeom(1,0.7)))
+
+
+df1 <- data.frame(
+    myattempt <- c(meanmyattempts,sdmyattempts),
+    rgeom <- c(meanrgeom,sdrgeom))
+
+rownames(df1) <- c("Mean", "Standard deviation")
+
+colnames(df1) <- c("Myattempts", "Rgeom")
+
+df1
+```
+
+c. For the third p, plot both distributions as histograms in the same plot.  
+
+```{r}
+library(ggplot2)
+par(mfrow = c(1,2))
+hist(replicate(1000,myattempts(0.3)), col = 'darkblue', main = 'Plot of myattempts', xlab = 'Failures', ylab = 'Frequency')
+
+hist(replicate(1000,rgeom(1,0.3)), col = 'Red', main = 'Plot of rgeom', xlab = 'Failures', ylab = 'Frequency')
+
+
+
+par(mfrow = c(1,1))
+```
+
+d. For the fourth p, make side-by-side box plots.  
+
+```{r}
+
+par(mfrow = c(1,2))
+boxplot(replicate(1000,myattempts(0.63)), col = 'darkblue', main = 'Plot of myattempts', xlab = 'Failures', ylab = 'Frequency')
+
+boxplot(replicate(1000,rgeom(1,0.63)), col = 'Red', main = 'Plot of rgeom', xlab = 'Failures', ylab = 'Frequency')
+
+```
+
+
+e. For the fifth p, plot the two empirical distribution functions in the same plot.  
+
+```{r}
+
+# Defining the Data Frame for ECDF
+
+df2 <- data.frame(x = c(replicate(10000,myattempts(0.1)), c(replicate(10000,rgeom(1,0.1)))), group = gl(2, 10000))
+
+
+ggplot(df2, aes(x=x, col=group)) +
+ 
+# stat_ecdf() function is used to plot ECDF plot
+stat_ecdf()
+
+
+```
+
+## Problem-2 
+
+Consider the following random experiment: draw a uniformly distributed random number $X_1$ from the interval $(0,1)$. Next, draw a uniformly distributed random number $X_2$ from the interval $(0,1+X_1)$, a uniformly distributed random number $X_3$ from the interval $(0,1+X_2)$ and so on until $X_{20}$. 
+
+Use a monte carlo simulation to give an approximate answer to What is the mean value of $X_{20}$? and use a histogram to identify the distribution of $X_{20}$.
+
+$X_1 \sim unif(0,1)$
+$X_2 \sim unif(0,1+X_1)$
+$X_3 \sim unif(0,1+X_2)$
+.
+.
+.
+$X_{20} \sim unif(0,1+X_{19})$
+
+The __R__ command for drawing a uniformly distributed random number from the interval $(0,b)$ is _runif(1,min = 0, max = b)_.
+
+
+```{r}
+nt <- 10000
+
+# Initialize an empty vector to store X20 values
+val <- numeric(nt)
+
+# Perform the Monte Carlo simulation
+for (i in 1:nt) {
+  X1 <- runif(1, min = 0, max = 1)
+  for (j in 2:20) {
+    X1 <- runif(1, min = 0, max = 1 + X1)
+  }
+  val[i] <- X1
+}
+
+meanval <- mean(val)
+
+
+hist(val, main = "Distribution of X", xlab = "X20", col = "red")
+
+cat("Estimated mean of X(20):", meanval, "\n")
+```
+
+## Problem-3
+
+
+Suppose that the daily power consumption of a major city, $X$, has a Gamma distribution with shape parameter $r = 4$ and scale parameter $\rho = 2$. Use __R__ to compute the following quantities: \\
+
+a. $Prob(X \le 12)$
+```{r}
+# exact
+sh = 4
+sc = 2 
+
+r = 4
+rho = 2
+prob1 <- pgamma(12, shape = sh, scale = sc)
+
+cat("Prob(X > 12):", prob1, "\n")
+```
+
+
+b. $Prob(X > 5)$  
+
+```{r}
+
+# Probability that X is greater than 5
+prob2 <- 1 - pgamma(5, shape = r, scale = rho)
+cat("Prob(X > 5):", prob2, "\n")
+
+
+
+
+
+```
+
+c. $Prob(|X-8|) < 1$  
+
+```{r}
+# Probability that |X - 8| < 1 (equivalent to 7 < X < 9)
+prob3 <- pgamma(9, shape = r, scale = rho) - pgamma(7, shape = r, scale = rho)
+cat("Prob(|X - 8| < 1):", prob3, "\n")
+```
+
+d. $z$ such that $Prob(X < z) = .95$  
+
+```{r}
+# z such that Prob(X < z) = 0.95
+z <- qgamma(0.95, shape = r, scale = rho)
+cat("z such that Prob(X < z) = 0.95:", z, "\n")
+
+```
+
+(Hint:$|X-8| < 1$ is equivalent to $7 < X < 9$)
+
+
+## Problem-4 
+
+Probability theory says that a binomial distribution, $B(n,p)$ is close to that of a normal distribution with mean $np$ and standard deviation $\sqrt{np(1-p)}$, if $np$ and $n(1-p)$ are both sufficiently large, e.g. at least 10.
+
+Check this by plotting both cumulative distribution functions in the same figure, using a staircase plot for the binomial distribution and a line plot for the normal distribution, for three different cases: a case where both $np$ and $n(1-p)$ are large, a case where $np$ is large and $n(1-p) < 10$, and a case where $np < 10$ and $n(1-p) < 10$.
+
+
+```{r}
+# Function to plot binomial and normal CDFs
+plot_binomial_normal_cdf <- function(n, p) {
+  # Generate values for the x-axis
+  x <- 0:n
+
+  # Compute binomial CDF
+  binomial_cdf <- pbinom(x, size = n, prob = p)
+
+  # Compute normal CDF parameters
+  mu <- n * p
+  sigma <- sqrt(n * p * (1 - p))
+
+  # Compute normal CDF
+  normal_cdf <- pnorm(x, mean = mu, sd = sigma)
+
+  # Plotting
+  plot(x, binomial_cdf, type = "s", main = "Binomial vs Normal CDF",
+       xlab = "Number of Successes", ylab = "Cumulative Probability",
+       col = "blue", lty = 2, lwd = 2)
+  lines(x, normal_cdf, type = "l", col = "red", lty = 1, lwd = 2)
+  legend("right", legend = c("Binomial", "Normal"), col = c("blue", "red"), lty = 1:2, lwd = 2)
+}
+
+# Case 1: np and n(1-p) are both large
+plot_binomial_normal_cdf(n = 50, p = 0.6)
+
+# Case 2: np is large but n(1-p) < 10
+plot_binomial_normal_cdf(n = 30, p = 0.8)
+
+# Case 3: np < 10 and n(1-p) < 10
+plot_binomial_normal_cdf(n = 10, p = 0.3)
+
+
+```
+
+Describe what happens in all three cases. In what sense are the cdf's not close in cases 2 and 3? (Hint: Compare with a cdf of the normal distribution)
+
+(Hint: You can specify a staircase plot using the `lines()` function and passing the optional parameter `type=s`)
+
+
+## Problem-5 
+
+A graphical technique for checking whether a sample has an approximate normal distribution is a "quantile-quantile" plot. The __R__ command is `qqnorm(x)`, where $x$ is the vector of sample values. If the plot is approximately a straight line, then this suggests that the sample comes from a normal distribution. Use the dataset from the `openintro` package to find out which of the the four distributions (three exams and course grade) is the closest to a normal distribution? You can load the dataset with the following commands `library(openintro)` and `data(exam_grades)`. Explore this by making `qqnorm()` and `qqline()` plots of the four distributions How close to straight lines are the plots in each case? How do the plots differ from straight lines? Hint: Make sure to remove the NA values.
+```{r}
+library(openintro)
+
+
+data(exam_grades)
+cleaned_data <- na.omit(exam_grades)
+head(cleaned_data)
+
+par(mfrow = c(2,2))
+
+
+qqnorm(cleaned_data$exam1)
+qqline(cleaned_data$exam1, col = 2)
+
+qqnorm(cleaned_data$exam2)
+qqline(cleaned_data$exam2, col = 2)
+
+qqnorm(cleaned_data$exam3)
+qqline(cleaned_data$exam3, col = 2)
+
+qqnorm(cleaned_data$course_grade)
+qqline(cleaned_data$course_grade, col = 2)
+```
+
+## Problem-6 
+
+If $X$ has a continuous distribution with cumulative distribution function $F$, then the new random variable $U = F(X)$ has a uniform $U(0,1)$ distribution. Verify this with simulations for three different continuous distributions of your choice, by making a random sample of sufficient size, sorting it, plugging it into the cdf $F$, and plotting the result.
+
+
+```{r}
+
+set.seed(432)
+
+expo <- rexp(100000, rate = 2)
+
+expcdf <- pexp(expo, rate = 2)
+
+hist(expcdf, main = "CDF Transformation", xlab = 'CDF Transformation', ylab = 'Frequency', col = 'green')
+
+```
+
+```{r}
+normal <- rnorm(100000)
+
+ncdft <- pnorm(normal)
+
+hist(ncdft, main = "CDF Transformation (Normal)", xlab = "CDF Transformation", ylab = "Frequency", col = 'Gold')
+
+```
+
+
+```{r}
+csample <- rcauchy(10000)
+
+ccdft <- pcauchy(csample)
+
+hist(ccdft, main = "CDF Transformation(Cauchy)", xlab = 'CDF Transformation', ylab = 'Frequency', col = 'red')
+
+```
+
+
+## Optional additional problem
+
+Suppose for $X = X_1 + X_2$ is the sum of two exponentially distributed random variables with the same parameter $\lambda$. Then $X^\alpha$ is very nearly normally distributed for a suitable choice of $\alpha$. Determine an approximate value for $\alpha$ (within 0.05), using a simulation and `qqnorm()` plots for each of your choices of $\alpha$. 
+
