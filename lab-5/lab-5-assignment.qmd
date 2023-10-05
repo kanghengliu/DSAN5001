@@ -1,0 +1,257 @@
+---
+title: "Lab-5: Assignment"
+author: "Dheeraj Oruganty"
+format:
+    html:
+        self-contained: True
+---
+
+## Problem 1:
+
+$X \sim U(0,1)$ and $Y \sim U(0,1)$.
+
+Plot the joint distribution of X & Y such that $X+Y < 1$
+
+`Numerical Example`
+
+$\left(X_1, X_2\right)$ with the range $\left\{\left(x_1, x_2\right) \mid x_1 \geq 0, x_2 \geq 0, x_1+x_2 \leq 1\right\}$ and the joint desity function $f\left(x_1, x_2\right)=2$ on this range.
+
+a. First make a large number of samples from $X \sim U(0,1)$ and $Y \sim U(0,1)$ and plot X & Y and then plot the samples below the line  $x+y = 1$ .
+```{r}
+
+set.seed(1000)
+x <- replicate(10000, runif(1, min = 0, max = 1))
+
+y <- replicate(10000, runif(1, min = 0, max = 1))
+
+data <- data.frame(x, y)
+
+plot(data$x, data$y, pch = 20, col = "lightgreen", xlab = "X", ylab = "Y", main = "Scatter Plot of X and Y")
+```
+
+```{r}
+
+plot(data$x < 0.5, data$y < 0.5 , pch = 20, col = "lightgreen", xlab = "X", ylab = "Y", main = "Scatter Plot of X and Y with x+y=1")
+
+abline(1,-1 , col = "red")
+
+
+points(data$x[data$x + data$y < 1], data$y[data$x + data$y < 1], pch = 20, col = "gold")
+
+```
+
+b. By looking at the plot, what is the joint p.d.f $f(X,Y)$?
+
+- The region below the line $(x + y = 1)$ is a  triangle with vertices at (0,0), (1,0), and (0,1). The area of this triangle is 0.5, as it is half of a unit square.
+
+ Since the joint probability density function (p.d.f.) integrates to 1 over the entire range, we can define the joint p.d.f. of X and Y as:
+
+  $$f(X, Y) = \begin{cases} 2 & \text{for } 0 \leq X \leq 1, 0 \leq Y \leq 1, \text{ and } X + Y \leq 1 \\0 & \text{otherwise}\end{cases}$$
+
+
+c. Find the marginal distribution of X by hand and making a probability histogram. Compare whether these are the same. (Hint: think about the limits of X and Y according to $0<X+Y<1$)
+
+
+- $$0 < X + Y < 1$$
+
+  integrating $f(X, Y)$ with respect to Y: $$f_X(X) = \int_{{0}}^{{1-X}} 2 \, dy$$
+
+
+  $$f_X(X) = 2\left[y\right]_{{0}}^{{1-X}} = 2(1-X)$$
+
+  The marginal distribution of X is:
+
+  $$f_X(X) = 2(1-X)$$
+
+```{r}
+
+fx <- 2 - 2*x
+
+hist(x[x+y<1], breaks = 20, xlab = 'X', ylab = 'Density', main = 'Marginal distribution of X')
+
+
+
+```
+
+
+The Marginal Distribution of X by hand and the probability histogram display the same results.
+
+
+d. Find the marginal distribution of Y by hand and making a probability histogram. Compare whether these are the same. (Hint: think about the limits of X and Y according to $0<X+Y<1$)
+
+
+
+
+- $$0 < X + Y < 1$$
+
+  integrating  $f(X, Y)$ with respect to X:
+
+  $$f_Y(Y) = \int_{{0}}^{{1-Y}} 2 \, dx$$
+
+  $$f_Y(Y) = 2\left[x\right]_{{0}}^{{1-Y}} = 2(1-Y)$$
+
+  So, the marginal distribution of Y is:
+
+  $$f_Y(Y) = 2(1-Y)$$
+
+
+```{r}
+
+hist(y[x+y<1], breaks = 20, xlab = 'X', ylab = 'Density', main = 'Marginal distribution of Y')
+
+
+```
+
+
+The Marginal Distribution of Y by hand and the probability histogram display the same results.
+
+## Problem 2: Joint distributions and Conditional Expectations. 
+
+A CDF is defined by 
+
+$$
+\begin{aligned}
+F(x,y) &= \begin{cases} Cx^2y(x+y^2) \quad (0 \leq y \leq 3, 0 \leq x \leq 2)\\
+0 \quad (otherwise) 
+\end{cases}
+\end{aligned}
+$$
+
+
+a. Find the joint probability density function.
+
+The Probability density function is defined as the derivative of the CDF function
+
+$$
+\begin{aligned}
+&\frac{\partial^2}{\partial x \partial y}\left(C x^2 y\left(x+y^2\right)\right)\\
+&\begin{aligned}
+& \frac{\partial}{\partial x}\left(C x^2 y\left(x+y^2\right)\right)=C y\left(3 x^2+2 x y^2\right) \\
+& =\frac{\partial}{\partial \boldsymbol{y}}\left(C y\left(3 \boldsymbol{x}^2+2 x y^2\right)\right)
+\end{aligned}\\
+&\begin{aligned}
+& \frac{\partial}{\partial y}\left(C y\left(3 x^2+2 x y^2\right)\right)=C\left(3 x^2+6 x y^2\right) \\
+& =C\left(3 \boldsymbol{x}^2+\mathbf{6 x y}^2\right)
+\end{aligned}
+\end{aligned}
+$$
+
+b. Find the value of $C$.
+
+$$
+\begin{aligned}
+&\int_0^3 \int_0^2 C\left(3 x^2+6 x y^2\right) d x d y\\
+&\begin{aligned}
+& \int_0^2 C\left(3 x^2+6 x y^2\right) d x=C\left(8+12 y^2\right) \\
+& =\int_{\mathbf{0}}^{\mathbf{3}} \boldsymbol{C}\left(\mathbf{8}+\mathbf{1 2} \boldsymbol{y}^{\mathbf{2}}\right) \boldsymbol{d y}
+\end{aligned}\\
+&\begin{aligned}
+& \int_0^3 C\left(8+12 y^2\right) d y=132 C \\
+& \mathbf{1 3 2 C} = 1
+\end{aligned}
+\end{aligned}
+$$
+
+
+$$ C = 1/132 $$
+
+
+
+
+
+c. Find the Marginal density of $X$
+
+
+$$
+\int_0^3 C\left(3 x^2+6 x y^2\right) d y
+$$
+$$Take the constant out: $\int a \cdot f(x) d x=a \cdot \int f(x) d x
+$$
+$$
+=C \cdot \int_0^3 3 x^2+6 x y^2 d y
+$$
+Apply the Sum Rule: $\int f(x) \pm g(x) d x=\int f(x) d x \pm \int g(x) d x$
+$$
+\left.=C_( \int_0^3 3 x^2 d y+\int_0^3 6 x y^2 d y\right)
+$$
+$$
+\int_0^3 3 x^2 d y=9 x^2
+$$
+$$
+\int_0^3 6 x y^2 d y=54 x
+$$
+$$
+=C\left(9 x^2+54 x\right)
+$$
+
+
+
+d. Find the Conditional expectation $E(Y|X)$
+
+$$
+\int_0^3 y \frac{3 C x^2+6 C x y^2}{9 C x^2+54 C x} d y
+$$
+Take the constant out: $\int a \cdot f(x) d x=a \cdot \int f(x) d x$
+$$
+=\frac{1}{54 C x+9 C x^2} \cdot \int_0^3\left(3 C x^2+6 C x y^2\right) y d y
+$$
+Expand $\left(3 C x^2+6 C x y^2\right) y: \quad 3 C x^2 y+6 C x y^3$
+$$
+=\frac{1}{54 C x+9 C x^2} \cdot \int_0^3 3 C x^2 y+6 C x y^3 d y
+$$
+Apply the Sum Rule: $\int f(x) \pm g(x) d x=\int f(x) d x \pm \int g(x) d x$
+$$
+=\frac{1}{54 C x+9 C x^2}\left(\int_0^3 3 C x^2 y d y+\int_0^3 6 C x y^3 d y\right)
+$$
+$$
+\int_0^3 3 C x^2 y d y=\frac{27 C x^2}{2}
+$$
+$$
+\int_0^3 6 C x y^3 d y=\frac{243 C x}{2}
+$$
+$$
+=\frac{1}{54 C x+9 C x^2}\left(\frac{27 C x^2}{2}+\frac{243 C x}{2}\right)
+$$
+Simplify $\frac{1}{54 C x+9 C x^2}\left(\frac{27 C x^2}{2}+\frac{243 C x}{2}\right): \quad \frac{3(x+9)}{2(x+6)}$
+$$
+=\frac{3(x+9)}{2(x+6)}
+$$
+
+e. Find the probability $Pr(X\leq Y)$
+
+
+$$
+\begin{aligned}
+&\int_0^2 \int_x^3 3 C x^2+6 C y^2 x d y d x\\
+&\begin{aligned}
+& \int_x^3 3 C x^2+6 C y^2 x d y=9 C x^2-3 C x^3+6 C x\left(9-\frac{x^3}{3}\right) \\
+& =\int_0^2\left(9 C x^2-3 C x^3+6 C x\left(9-\frac{x^3}{3}\right)\right) d x \\
+&
+\end{aligned}\\
+&\begin{aligned}
+& \int_0^2\left(9 C x^2-3 C x^3+6 C x\left(9-\frac{x^3}{3}\right)\right) d x=12 C+\frac{476 C}{5} \\
+& =\mathbf{1 2 C}+\frac{\mathbf{4 7 6} \boldsymbol{C}}{\mathbf{5}}~=\mathbf{0.832}
+\end{aligned}
+\end{aligned}
+$$
+
+
+
+
+
+## Problem 3: Optional (don't need to submit)
+
+Let $Y \sim N(0,1)$ have a standard normal distribution. Set $X=\lfloor Y\rfloor$ (floor function).
+
+- Find median $(Y \mid X=x)$ from simulations and plot it as a function of $x$.
+- 
+- Find $s d(Y \mid X=x)$ from simulations and plot it as a function of $x$.
+
+a. Do this with a data frame. Two columns, one for  X  and one for  Y. use _floor()_ function.
+
+    _floor function:_ <https://en.wikipedia.org/wiki/Floor_and_ceiling_functions>
+
+b. Find the median $Y|X$ and plot. (You can use the _aggregate()_ function.). Comment.
+
+c. Find the standard deviation of $Y|X$ and plot. (You can use the _aggregate()_ function.). Comment.
+
